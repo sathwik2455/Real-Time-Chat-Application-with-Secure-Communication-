@@ -17,9 +17,18 @@ const useLogin = () => {
 				body: JSON.stringify({ username, password }),
 			});
 
-			const data = await res.json();
-			if (data.error) {
-				throw new Error(data.error);
+			const responseText = await res.text();
+			let data = {};
+			if (responseText) {
+				try {
+					data = JSON.parse(responseText);
+				} catch {
+					throw new Error("Server returned an invalid response. Please try again.");
+				}
+			}
+
+			if (!res.ok) {
+				throw new Error(data.error || `Login failed (${res.status})`);
 			}
 
 			localStorage.setItem("chat-user", JSON.stringify(data));

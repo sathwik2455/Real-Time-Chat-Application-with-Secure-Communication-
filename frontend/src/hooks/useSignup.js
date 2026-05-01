@@ -18,9 +18,18 @@ const useSignup = () => {
 				body: JSON.stringify({ fullName, username, password, confirmPassword, gender }),
 			});
 
-			const data = await res.json();
-			if (data.error) {
-				throw new Error(data.error);
+			const responseText = await res.text();
+			let data = {};
+			if (responseText) {
+				try {
+					data = JSON.parse(responseText);
+				} catch {
+					throw new Error("Server returned an invalid response. Please try again.");
+				}
+			}
+
+			if (!res.ok) {
+				throw new Error(data.error || `Signup failed (${res.status})`);
 			}
 			localStorage.setItem("chat-user", JSON.stringify(data));
 			setAuthUser(data);

@@ -1,6 +1,5 @@
 import path from "path";
 import express from "express";
-import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 
 import authRoutes from "./routes/auth.routes.js";
@@ -8,13 +7,10 @@ import messageRoutes from "./routes/message.routes.js";
 import userRoutes from "./routes/user.routes.js";
 
 import connectToMongoDB from "./db/connectToMongoDB.js";
+import { env } from "./config/env.js";
 import { app, server } from "./socket/socket.js";
 
-dotenv.config();
-
 const __dirname = path.resolve();
-// PORT should be assigned after calling dotenv.config() because we need to access the env variables. Didn't realize while recording the video. Sorry for the confusion.
-const PORT = process.env.PORT || 5000;
 
 app.use(express.json()); // to parse the incoming requests with JSON payloads (from req.body)
 app.use(cookieParser());
@@ -29,7 +25,22 @@ app.get("*", (req, res) => {
 	res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
 });
 
-server.listen(PORT, () => {
-	connectToMongoDB();
-	console.log(`Server Running on port ${PORT}`);
-});
+const startServer = (port) => {
+	server.once("error", (error) => {
+		if (error.code === "EADDRINUSE") {
+			console.log(`Backend is already running on port ${port}.`);
+			process.exit(0);
+			return;
+		}
+
+		console.log("Server failed to start", error.message);
+		process.exit(1);
+	});
+
+	server.listen(port, () => {
+		connectToMongoDB();
+		console.log(`Server Running on port ${port}`);
+	});
+};
+
+startServer(env.port);

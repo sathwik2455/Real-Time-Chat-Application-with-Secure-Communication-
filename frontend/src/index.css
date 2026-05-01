@@ -3,10 +3,98 @@
 @tailwind utilities;
 
 body {
-	background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url("/bg.png");
-	background-repeat: no-repeat;
-	background-size: cover;
-	background-position: center;
+	margin: 0;
+	min-height: 100vh;
+	color: #e8f6ff;
+	background:
+		radial-gradient(circle at 10% 20%, rgba(114, 221, 255, 0.2), transparent 30%),
+		radial-gradient(circle at 85% 10%, rgba(70, 102, 255, 0.22), transparent 35%),
+		radial-gradient(circle at 50% 100%, rgba(131, 79, 255, 0.18), transparent 40%),
+		linear-gradient(140deg, #070a15 0%, #0b1324 42%, #090d1b 100%);
+	background-attachment: fixed;
+	font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+#root {
+	min-height: 100vh;
+}
+
+.frost-panel {
+	background: linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03));
+	border: 1px solid rgba(179, 231, 255, 0.25);
+	box-shadow:
+		0 20px 45px rgba(3, 7, 18, 0.6),
+		inset 0 1px 0 rgba(255, 255, 255, 0.25);
+	backdrop-filter: blur(20px);
+}
+
+.frost-input {
+	width: 100%;
+	border-radius: 0.8rem;
+	border: 1px solid rgba(143, 219, 255, 0.35);
+	background: rgba(5, 14, 30, 0.65);
+	padding: 0.7rem 0.85rem;
+	color: #e8f6ff;
+	transition: 0.2s ease;
+}
+
+.frost-input::placeholder {
+	color: rgba(201, 230, 255, 0.55);
+}
+
+.frost-input:focus {
+	outline: none;
+	border-color: rgba(119, 223, 255, 0.95);
+	box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+}
+
+.frost-btn {
+	border: 1px solid rgba(125, 223, 255, 0.8);
+	background: linear-gradient(145deg, #43bfff, #2b8bff);
+	color: #eaf7ff;
+	font-weight: 700;
+	border-radius: 0.85rem;
+	padding: 0.7rem 1rem;
+	box-shadow: 0 12px 24px rgba(33, 114, 255, 0.35);
+	transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.frost-btn:hover {
+	filter: brightness(1.08);
+	transform: translateY(-1px);
+}
+
+.frost-btn:disabled {
+	opacity: 0.7;
+	cursor: not-allowed;
+}
+
+.frost-chat-layout {
+	width: min(100%, 1024px);
+	height: min(86vh, 760px);
+	border-radius: 1.25rem;
+	overflow: hidden;
+	transform-style: preserve-3d;
+}
+
+.frost-sidebar {
+	background: linear-gradient(160deg, rgba(18, 31, 56, 0.78), rgba(11, 16, 31, 0.72));
+	border-right: 1px solid rgba(146, 221, 255, 0.25);
+}
+
+.frost-main {
+	background: linear-gradient(180deg, rgba(8, 16, 34, 0.8), rgba(8, 14, 28, 0.74));
+}
+
+.frost-chip {
+	border: 1px solid rgba(138, 223, 255, 0.35);
+	background: rgba(14, 29, 54, 0.6);
+	border-radius: 9999px;
+}
+
+.soft-divider {
+	height: 1px;
+	background: linear-gradient(to right, transparent, rgba(170, 227, 255, 0.45), transparent);
 }
 
 /* dark mode looking scrollbar */
@@ -19,12 +107,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-	background: #121212;
+	background: #0f2038;
 	border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-	background: #242424;
+	background: #17416f;
 }
 
 /* SHAKE ANIMATION ON HORIZONTAL DIRECTION */

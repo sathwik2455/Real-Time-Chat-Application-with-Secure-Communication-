@@ -1,86 +1,153 @@
-const initStoreKafka = require("../kafka/KafkaProducer");
 const { Server } = require("socket.io");
-const redis = require('ioredis');
 const http = require("http");
-const redisChannel = process.env.REDIS_CHANNEL
-const redisClient = redis.createClient();
-const redisPub = new redis();
-const redisNor = new redis();
+const { verifyToken } = require("../utils/jwt");
+const User = require("../models/User");
+const Message = require("../models/Message");
 
 let io;
 let server;
+const onlineUsers = new Map();
 
-
-const createServer = async (app) => {
+function createServer(app) {
     server = http.createServer(app);
-    io = new Server(server,{
-        cors:{
-            origin: JSON.parse(process.env.SOCKET_ALLOWED_ORIGIN)
+    io = new Server(server, {
+        cors: {
+            origin: JSON.parse(process.env.ALLOWED_ORIGINS),
+            credentials: true
         }
     });
-    await init();
+    
+    setupSocketHandlers();
+    startServer();
 }
 
-const init = async () => {
+function setupSocketHandlers() {
+    io.use(async (socket, next) => {
+        try {
+            const token = socket.handshake.auth.token;
+            if (!token) {
+                return next(new Error('No token provided'));
+            }
 
-    redisClient.on("connect", function () {
-        console.log(`connected to redis`);
-    });
+            const decoded = verifyToken(token);
+            if (!decoded) {
+                return next(new Error('Invalid token'));
+            }
 
-    redisClient.on("error", function (err) {
-        console.log("redis connection error " + err);
-        throw err;
-    });
+            const user = await User.findById(decoded.userId).select('-password');
+            if (!user) {
+                return next(new Error('User not found'));
+            }
 
-    redisClient.on("end", function (err) {
-        console.log("redis connection end " + err);
-    });
-
-
-
-    redisClient.subscribe(redisChannel, (err, count) => {
-        if (err) {
-            console.error("Failed to subscribe: %s", err.message);
-        } else {
-            console.log(
-                `Subscribed successfully! This client is currently subscribed to ${count} channels.`
-            );
+            socket.user = user;
+            next();
+        } catch (error) {
+            next(new Error('Authentication error'));
         }
-    })
+    });
 
-    const pushMessage = async (data,socket_id) => {
-        let l = { message: `${data}`, "createdAt":Date.now(), socket_id };
-        
-        let message = JSON.stringify(l);
-        redisPub.publish(redisChannel, message);
-        await redisNor.rpush("messages", message);
-        await initStoreKafka(message);
-    }
+    io.on("connection", handleConnection);
+}
 
-    // Socket.io
-    io.on("connection", (socket) => {
-        pushMessage(`${socket.id} Joined the Chat!`,socket.id);
-        
-        socket.on('chat message', async (data) => {
-            pushMessage(data,socket.id);
+async function handleConnection(socket) {
+    const user = socket.user;
+    console.log(`${user.username} connected`);
+
+    onlineUsers.set(user._id.toString(), socket.id);
+
+    await User.findByIdAndUpdate(user._id, {
+        isOnline: true,
+        lastSeen: new Date()
+    });
+
+    io.emit("users:online", Array.from(onlineUsers.keys()));
+
+    socket.emit("user:connected", {
+        userId: user._id,
+        username: user.username,
+        email: user.email,
+        profilePicture: user.profilePicture
+    });
+
+    socket.on("message:send", async (data) => {
+        try {
+            const { recipientId, message } = data;
+
+            if (!recipientId || !message || message.trim().length === 0) {
+                socket.emit("error", { message: "Invalid message data" });
+                return;
+            }
+
+            const newMessage = await Message.create({
+                sender: user._id,
+                recipient: recipientId,
+                message: message.trim()
+            });
+
+            await newMessage.populate('sender', 'username profilePicture');
+            await newMessage.populate('recipient', 'username profilePicture');
+
+            const messageData = {
+                _id: newMessage._id,
+                sender: newMessage.sender,
+                recipient: newMessage.recipient,
+                message: newMessage.message,
+                isRead: newMessage.isRead,
+                createdAt: newMessage.createdAt
+            };
+
+            const recipientSocketId = onlineUsers.get(recipientId);
+            if (recipientSocketId) {
+                io.to(recipientSocketId).emit("message:receive", messageData);
+            }
+
+            socket.emit("message:sent", messageData);
+        } catch (error) {
+            console.error('Error sending message:', error);
+            socket.emit("error", { message: "Failed to send message" });
+        }
+    });
+
+    socket.on("typing:start", (data) => {
+        const { recipientId } = data;
+        const recipientSocketId = onlineUsers.get(recipientId);
+        if (recipientSocketId) {
+            io.to(recipientSocketId).emit("typing:start", {
+                userId: user._id,
+                username: user.username
+            });
+        }
+    });
+
+    socket.on("typing:stop", (data) => {
+        const { recipientId } = data;
+        const recipientSocketId = onlineUsers.get(recipientId);
+        if (recipientSocketId) {
+            io.to(recipientSocketId).emit("typing:stop", {
+                userId: user._id
+            });
+        }
+    });
+
+    socket.on("disconnect", async () => {
+        console.log(`${user.username} disconnected`);
+        onlineUsers.delete(user._id.toString());
+
+        await User.findByIdAndUpdate(user._id, {
+            isOnline: false,
+            lastSeen: new Date()
         });
 
-
-        socket.on("disconnect", data => {
-            pushMessage(`${socket.id} Left the Chat!`,socket.id);
-        })
-
-
+        io.emit("users:online", Array.from(onlineUsers.keys()));
     });
+}
 
+function startServer() {
+    const PORT = process.env.PORT || 8000;
+    server.listen(PORT, () => {
+        console.log(`✅ Server running on port ${PORT}`);
+        console.log(`✅ Socket.io ready`);
+    });
+}
 
-    redisClient.on("message", (channel, message) => {
-        console.log(message)
-        io.emit('chat message', JSON.parse(message));
-    })
-
-    server.listen(process.env.WEB_APP_PORT, () => console.log(`Server Started at PORT:${process.env.WEB_APP_PORT}`));
-
-};
-
-module.exports = { createServer }
+module.exports = { createServer };

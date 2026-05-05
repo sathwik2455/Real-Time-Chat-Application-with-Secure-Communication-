@@ -1,179 +1,351 @@
-# ScalableChat: A Next-Gen Scalable Distributed Chat Application
+# 💬 Real-Time Chat Application - MERN Stack
 
+A production-ready real-time chat application built with MongoDB, Express, React, Node.js, and Socket.io, featuring JWT authentication, password hashing, input validation, file uploads, and security best practices.
 
-## **Overview:**
+---
 
-ScalableChat is a sophisticated web application designed for real-time and scalable chat experiences. Leveraging a modern tech stack, it seamlessly combines backend and frontend technologies to provide a robust chat solution.
+## ✨ Features
 
-![image](https://github.com/codeterrayt/Scalable-Chat-App/assets/76623307/2a45ed73-d3c3-49fb-bb79-076053aca2ff)
+### 🔐 Authentication & Security
+- ✅ **Password Hashing** with Bcryptjs (10 salt rounds)
+- ✅ **JWT Authentication** for secure user sessions
+- ✅ **Protected Routes** with authentication middleware
+- ✅ **Input Validation** using Joi schemas
+- ✅ **Security Headers** with Helmet
+- ✅ **CORS Configuration** for safe cross-origin requests
 
-#### Tech Stack:
-- **Backend:** Express.js, Socket.IO, Redis, Kafka, ZooKeeper, MongoDB
-- **Frontend:** Svelte
+### 💬 Real-Time Messaging
+- ✅ **Socket.io** for instant bidirectional communication
+- ✅ **Online/Offline Status** tracking
+- ✅ **Typing Indicators** to show when someone is typing
+- ✅ **Message History** stored in MongoDB
+- ✅ **Read Receipts** for message tracking
 
-#### Backend Technologies:
+### 📤 File Management
+- ✅ **Profile Picture Upload** with Multer
+- ✅ **File Size Limits** (5MB max)
+- ✅ **File Type Validation** (images only)
+- ✅ **Secure File Storage** with unique filenames
 
-- **Express.js API:** Empowering the backend, Express.js facilitates robust API handling, making it suitable for deployment across distributed systems.
-- **Socket.IO:** Enables real-time, bidirectional communication, creating dynamic and responsive chat interactions on the backend.
-- **Redis:** Acts as a message broker and caching solution, ensuring scalability and efficiency in handling chat messages.
-- **Kafka and ZooKeeper:** Utilized for distributed event streaming and system coordination, enhancing reliability in handling messages.
-- **MongoDB:** Serves as the backend database, providing reliable and persistent storage for chat messages.
+### 🎯 Additional Features
+- ✅ User search functionality
+- ✅ Unread message count
+- ✅ Last seen timestamp
+- ✅ RESTful API design
+- ✅ MongoDB indexing for performance
 
-#### Frontend Technologies:
+---
 
-- **Svelte Framework:** Crafting the frontend with Svelte ensures a responsive and dynamic user interface, optimizing the user experience.
+## 🚀 Quick Start
 
+### Prerequisites
+- Node.js (v14+)
+- MongoDB (local or Atlas)
+- npm or yarn
 
-# Features:
+### Installation
 
-- **Real-time Communication:** Enjoy a seamless and instantaneous chat experience facilitated by Socket.IO, enabling bidirectional communication between clients and the server.
-
-- **Scalability:** Achieve high scalability with a powerful combination of technologies. Redis serves as a fast and efficient message broker, Kafka facilitates distributed event streaming, and ZooKeeper effectively manages distributed systems.
-
-- **Persistence:** MongoDB takes the role of the backend database, providing a reliable and persistent storage solution for chat messages.
-
-- **Efficiency:** Redis plays a dual role, not only acting as a message broker but also efficiently caching frequently accessed data. This enhances overall system performance.
-
-- **Modern Frontend:** The frontend is crafted using Svelte, a lightweight and reactive JavaScript framework, ensuring a smooth and responsive user interface.
-
-- ## Real-time and Scalable Experience
-
-	ScalableChat transcends traditional chat applications; it offers an immersive experience. The real-time nature ensures instant communication, while the scalable architecture effortlessly adapts to accommodate growing user bases.
-
-- ## Distributed System Architecture
-
-	Designed as a distributed system, ScalableChat thrives on server independence, allowing it to seamlessly run on any server. This decentralization fosters a resilient and efficient communication model.
-
-- ## Redis for Optimal Caching
-
-	Leveraging Redis for caching, ScalableChat ensures optimal performance. By storing frequently accessed data, it significantly reduces the load on the backend, enhancing overall system efficiency.
-
-- ## Pub/Sub with Redis
-
-	Through Redis Pub/Sub, ScalableChat establishes a distributed pub/sub model, enabling real-time communication across all components of the system. Messages are broadcasted instantly, ensuring a synchronized experience for all users.
-
-- ## Kafka for Efficient Message Storage
-
-	To address the challenge of storing bulk messages without burdening the backend, ScalableChat utilizes Kafka. This efficient solution manages the storage of bulk messages in MongoDB, significantly reducing backend queries and enhancing overall system performance.
-
-# Installation:
-
-## Prerequisites
-Before running ScalableChat, ensure that the following dependencies are installed on your system. If not, follow the instructions below for installation.
-
-## 1. Redis
-
-[Redis](https://redis.io/) is used as a message broker and caching solution. Install Redis on your machine or use Docker for a quick setup.
-
-####  Ubuntu/Debian:
 ```bash
-sudo apt-get update
-sudo apt-get install redis-server
+# 1. Clone the repository
+git clone <your-repo-url>
+cd Scalable-Chat-App
+
+# 2. Install dependencies
+npm install
+
+# 3. Configure environment variables
+# Create .env file (see .env.example)
+
+# 4. Start MongoDB
+# Local: mongod
+# Or Docker: docker run -d -p 27017:27017 mongo
+
+# 5. Start the server
+npm start
 ```
 
-#### Docker:
+Server will run on `http://localhost:8000`
+
+---
+
+## 📚 Documentation
+
+- **[SETUP_GUIDE.md](./SETUP_GUIDE.md)** - Complete setup instructions with API documentation
+- **[TESTING_GUIDE.md](./TESTING_GUIDE.md)** - How to test all features manually
+- **[PROJECT_SUMMARY.md](./PROJECT_SUMMARY.md)** - Technical overview and interview prep
+
+---
+
+## 🔌 API Endpoints
+
+### Authentication
+```
+POST   /api/auth/register              Register new user
+POST   /api/auth/login                 Login user
+GET    /api/auth/profile               Get current user (protected)
+POST   /api/auth/logout                Logout user (protected)
+POST   /api/auth/upload-profile-picture Upload profile pic (protected)
+```
+
+### Users
+```
+GET    /api/users                      Get all users (protected)
+GET    /api/users/online               Get online users (protected)
+GET    /api/users/search?query=john    Search users (protected)
+```
+
+### Messages
+```
+GET    /api/messages/:userId           Get conversation (protected)
+POST   /api/messages                   Send message (protected)
+PUT    /api/messages/:userId/read      Mark as read (protected)
+GET    /api/messages/unread/count      Get unread count (protected)
+```
+
+---
+
+## 🔌 Socket.io Events
+
+### Client → Server
+```javascript
+socket.emit('message:send', { recipientId, message });
+socket.emit('typing:start', { recipientId });
+socket.emit('typing:stop', { recipientId });
+```
+
+### Server → Client
+```javascript
+socket.on('user:connected', (data) => { ... });
+socket.on('users:online', (userIds) => { ... });
+socket.on('message:receive', (message) => { ... });
+socket.on('message:sent', (message) => { ... });
+socket.on('typing:start', (data) => { ... });
+socket.on('typing:stop', (data) => { ... });
+```
+
+---
+
+## 📁 Project Structure
+
+```
+chat-app/
+├── app/
+│   ├── controllers/          Business logic
+│   │   ├── authController.js
+│   │   ├── userController.js
+│   │   └── messageController.js
+│   ├── middleware/           Auth & Upload
+│   │   ├── auth.js
+│   │   └── upload.js
+│   ├── models/               Mongoose models
+│   │   ├── User.js
+│   │   └── Message.js
+│   ├── routes/               API routes
+│   │   └── route.js
+│   ├── socket/               Socket.io logic
+│   │   └── socket.js
+│   ├── utils/                Helper functions
+│   │   └── jwt.js
+│   └── validators/           Joi schemas
+│       └── authValidator.js
+├── uploads/                  Uploaded files
+├── .env                      Environment variables
+├── .gitignore               Git ignore file
+├── index.js                 Main server file
+└── package.json             Dependencies
+```
+
+---
+
+## 🛠️ Technologies Used
+
+### Backend
+- **Node.js** - JavaScript runtime
+- **Express.js** - Web framework
+- **MongoDB** - NoSQL database
+- **Mongoose** - MongoDB ODM
+- **Socket.io** - Real-time communication
+
+### Security & Validation
+- **bcryptjs** - Password hashing
+- **jsonwebtoken** - JWT authentication
+- **joi** - Input validation
+- **helmet** - Security headers
+- **cors** - Cross-origin resource sharing
+
+### File Handling
+- **multer** - File upload middleware
+
+---
+
+## 🧪 Testing
+
+### Manual Testing with Postman
+
+1. **Register a user**
+```http
+POST http://localhost:8000/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "alice",
+  "email": "alice@test.com",
+  "password": "123456"
+}
+```
+
+2. **Login**
+```http
+POST http://localhost:8000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "alice@test.com",
+  "password": "123456"
+}
+```
+
+3. **Get Profile** (use token from login)
+```http
+GET http://localhost:8000/api/auth/profile
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+See [TESTING_GUIDE.md](./TESTING_GUIDE.md) for complete testing instructions.
+
+---
+
+## 🔒 Security Features
+
+1. **Password Hashing** - Bcrypt with 10 salt rounds
+2. **JWT Tokens** - 7-day expiration
+3. **Input Validation** - Joi schemas for all inputs
+4. **File Upload Security** - Size limits, type validation
+5. **CORS** - Whitelist allowed origins
+6. **Helmet** - 11 security headers
+7. **MongoDB Injection Prevention** - Mongoose sanitization
+
+---
+
+## 🚀 Deployment
+
+### Deploy to Render
+1. Create account on [Render.com](https://render.com)
+2. Create new Web Service
+3. Connect GitHub repository
+4. Set environment variables
+5. Deploy!
+
+### Deploy to Railway
+1. Create account on [Railway.app](https://railway.app)
+2. New Project → Deploy from GitHub
+3. Add environment variables
+4. Auto-deploy on push
+
+---
+
+## 📝 Environment Variables
+
+```env
+# Server
+PORT=8000
+NODE_ENV=development
+
+# Database
+MONGO_URI=mongodb://127.0.0.1:27017/chat-app-db
+
+# JWT Secret
+JWT_SECRET=your_super_secret_key_change_this
+
+# CORS
+ALLOWED_ORIGINS=["http://localhost:5173"]
+
+# File Upload
+MAX_FILE_SIZE=5242880
+UPLOAD_PATH=./uploads
+```
+
+---
+
+## 🎯 Interview Topics Covered
+
+1. ✅ Password Hashing (Bcrypt)
+2. ✅ JWT Authentication
+3. ✅ Environment Variables (dotenv)
+4. ✅ Input Validation (Joi)
+5. ✅ File Uploads (Multer)
+6. ✅ CORS & Security Headers (Helmet)
+7. ✅ REST API Design
+8. ✅ Socket.io Real-time Communication
+9. ✅ MongoDB & Mongoose
+10. ✅ Express Middleware
+11. ✅ Error Handling
+12. ✅ Authentication Middleware
+13. ✅ MVC Architecture
+14. ✅ Database Indexing
+15. ✅ Production Deployment
+
+---
+
+## 🐛 Troubleshooting
+
+### MongoDB Connection Error
 ```bash
-docker pull redis
+# Start MongoDB
+mongod
+
+# Or use Docker
+docker run -d -p 27017:27017 --name mongodb mongo
 ```
 
-## 2. Apache Kafka:
-
-
-#### Ubuntu/Debian:
+### Port Already in Use
 ```bash
-sudo apt-get update
-sudo apt-get install default-jre
-
-# Download Kafka from https://kafka.apache.org/downloads
-# Extract and run ZooKeeper and Kafka
-
+# Change PORT in .env
+PORT=3000
 ```
 
-#### Docker: 
-```bash
-docker pull confluentinc/cp-kafka
+### JWT Token Invalid
+Make sure you're sending token in header:
+```
+Authorization: Bearer YOUR_TOKEN_HERE
 ```
 
-## 3. Zookeeper:
-### Ubuntu/Debian:
-```bash
-READ STEP 2
-```
+---
 
-#### Docker: 
-```bash
-docker pull zookeeper
-```
+## 📚 Learn More
 
-## 4. MongoDB:
-#### Ubuntu/Debian:
-```bash 
-sudo apt-get update
-sudo apt-get install mongodb
-```
-#### Docker:
-```bash 
-docker pull mongo
-```
-## 5. Installation: 
+- [Express.js Docs](https://expressjs.com/)
+- [Socket.io Docs](https://socket.io/docs/)
+- [MongoDB Docs](https://docs.mongodb.com/)
+- [JWT.io](https://jwt.io/)
+- [Joi Validation](https://joi.dev/)
 
-1. Clone the repository:
-```git clone https://github.com/codeterrayt/Scalable-Chat-App.git```
+---
 
-2. Install dependencies:
-   ```bash
-   cd scalable-chat-app && npm install
-   cd public && npm install
-   ```
-3. Run all Installed Prerequisites (Docker):
- ```bash
-   docker run -p 27017:27017 mongo
-   docker run -p 2181:2181 zookeeper
-   docker run -p 6379:6379 redis/redis-stack-server:latest
-   docker run -p 9092:9092 -e KAFKA_ZOOKEEPER_CONNECT=<IPv4-Address>:2181 -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://<IPv4-Address>:9092 -e KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 confluentinc/cp-kafka
-   ```
-4. Before Running the Project: Set Configuration
-   - Before launching the ScalableChat project, it's essential to configure the project settings in .env based on your specific setup.
- ```bash
-# API ENV'S
-WEB_API_PORT=8000
-WEB_API_ALLOWED_ORIGIN=["http://localhost:5173", "http://127.0.0.1:5173"]
+## 📄 License
 
-# DATABASE ENV'S
-MONGO_CONNECT_STRING="mongodb://127.0.0.1:27017/scalable-chat-app-db"
+MIT License - Free to use for learning and interviews!
 
-# SOCKET ENV'S
-SOCKET_ALLOWED_ORIGIN=["http://localhost:5173", "http://127.0.0.1:5173"]
+---
 
+## 👨‍💻 Author
 
-#REDIS ENV'S
-REDIS_CHANNEL="redis-message-channel"
+Built as a learning project to demonstrate modern backend development practices.
 
-#KAFKA ENV'S
-KAFKA_GROUP_ID="scalable-chat-app"
-KAFKA_BROKERS="<IPv4-Address>:9092"
-PROCESS_KAFKA_MESSAGE_LIMIT=100
-KAFKA_TOPIC="chat-updates"
-KAFKA_NO_OF_PARTITIONS=1
-  ```
+---
 
-5. Run Project :
-```bash
-node ./app/kafka/KafkaAdmin.js
-node KafkaConsumerRunner.js 
-node index.js
-node ./app/Jobs/cron.js
-cd ./public && npm run dev
-```
- 
+## 🎉 What's Next?
 
-	
-To create a production version of your frontend (first goto public folder):
-```bash
-npm run build
-```
+- [ ] Add email verification
+- [ ] Implement forgot password
+- [ ] Create React frontend
+- [ ] Add group chat
+- [ ] Implement message reactions
+- [ ] Add voice/video calling
+- [ ] Deploy to production
 
-You can preview the production build with `npm run preview`.
+---
 
-> To deploy your frontend, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+**Happy Coding! 🚀**
 
+For detailed setup instructions, see [SETUP_GUIDE.md](./SETUP_GUIDE.md)

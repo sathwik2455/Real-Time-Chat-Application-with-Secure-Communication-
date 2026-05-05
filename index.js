@@ -1,32 +1,56 @@
 require('dotenv').config();
 
-
 const express = require("express");
 const cors = require("cors");
-const app = express();
+const helmet = require("helmet");
+const mongoose = require("mongoose");
 const path = require("path");
-const router = require("./app/routes/route")
 
-const { createServer } = require("./app/socket/socket")
+const app = express();
+const router = require("./app/routes/route");
+const socketServer = require("./app/socket/socket");
 
-// Configure cors to allow only requests from port 8888
+// ============ DATABASE CONNECTION ============
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('✅ MongoDB connected successfully'))
+    .catch((err) => {
+        console.error('❌ MongoDB connection error:', err);
+        process.exit(1);
+    });
+
+// ============ MIDDLEWARE ============
+
+// Security headers
+app.use(helmet());
+
+// CORS configuration
 const corsOptions = {
-    origin: JSON.parse(process.env.WEB_API_ALLOWED_ORIGIN),
+    origin: JSON.parse(process.env.ALLOWED_ORIGINS),
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     optionsSuccessStatus: 204,
 };
-
-// Enable CORS for all routes
 app.use(cors(corsOptions));
 
-// set the view engine to ejs
-app.set('view engine', 'ejs');
+// Body parsing
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// app.use(express.static(path.resolve("./public")));
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// ============ ROUTES ============
 app.use('/', router);
 
-createServer(app);
+// ============ ERROR HANDLING ============
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({
+        success: false,
+        message: 'Something went wrong!',
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+});
 
-
+// ============ START SERVER ============
+socketServer.createServer(app);
